@@ -1,0 +1,9 @@
+{
+  "name": "react-native-orm",
+  "version": "1.0.0",
+  "description": "ORM for React Native",
+  "main": "index.js",
+  "repository": "https://github.com/whizdummy/react-native-orm",
+  "author": "Jerald John Pormon",
+  "license": "MIT"
+}
