@@ -1,6 +1,7 @@
 import { Query } from "./Query";
 
 import { serialize } from "./utils/serializer";
+import { formatTimestamp } from "./utils/timestamp";
 
 let _assignableFields   = new WeakMap();
 let _selectedField      = new WeakMap();
@@ -205,11 +206,22 @@ export class Model extends Query {
      * Removes data of the specified Model
      * Same as Query.delete()
      * 
+     * @param {Boolean} softDelete
      */
-    remove() {
+    remove(softDelete = false) {
         return new Promise(async (resolve, reject) => {
             // Reset values
             _isEdit.set(this, false);
+
+            if (softDelete) {
+                let newKeyValue = _keyValue.get(this);
+
+                newKeyValue['deleted_at'] = formatTimestamp(new Date());
+
+                _keyValue.set(this, newKeyValue);
+
+                return resolve(await this.update(serialize([ _keyValue.get(this) ])[0]));
+            }
 
             return resolve(await this.delete());
         });
