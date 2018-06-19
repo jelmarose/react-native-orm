@@ -258,7 +258,7 @@ export class Query {
             const sqlQuery = await (_databaseInstance.get(this)).executeSql('SELECT '
                 + fields + ' FROM ' 
                 + _tableName.get(this) + ' '
-                + _whereClause.get(this)
+                + _whereClause.get(this) + ' '
                 + limitQueryFormat + ';', _whereClauseValues.get(this));
 
             // Reset values

@@ -108,7 +108,9 @@ export class Model extends Query {
      */
     find(value, column = 'uuid') {
         return new Promise(async (resolve, reject) => {
-            const queryRes = await this.where(column, '=', value).get();
+            const queryRes = await this.where(column, '=', value)
+                .andWhereNull('deleted_at')
+                .get();
 
             // TODO
             // Refactor Later...
@@ -153,7 +155,7 @@ export class Model extends Query {
      */
     first() {
         return new Promise(async (resolve, reject) => {
-            const queryRes = await this.limit(1).get();
+            const queryRes = await this.whereNull('deleted_at').limit(1).get();
 
             // TODO
             // Refactor Later...
