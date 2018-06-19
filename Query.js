@@ -56,18 +56,9 @@ export class Query {
      * @param {string} value
      */
     setKeyValue(key, value) {
-        // TODO:
-        // Will refactor later...
-        let newKeyVal = {};
+        let newKeyVal = _keyValue.get(this);
 
-        Object.keys(_keyValue.get(this)).forEach(keyValKey => {
-            newKeyVal = {
-                ...newKeyVal,
-                [keyValKey]: keyValKey === key
-                    ? value
-                    : (_keyValue.get(this))[keyValKey]
-            };
-        });
+        newKeyVal[key] = value;
 
         _keyValue.set(this, newKeyVal);
     }

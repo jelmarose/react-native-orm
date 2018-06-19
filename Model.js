@@ -72,18 +72,9 @@ export class Model extends Query {
      * @param {*} value
      */
     setFieldValue(value) {
-        let newKeyValue = {};
-
-        // TODO:
-        // Will refactor later...
-        Object.keys(_keyValue.get(this)).forEach(key => {
-            newKeyValue = {
-                ...newKeyValue,
-                [key]: key === _selectedField.get(this)
-                    ? value
-                    : (_keyValue.get(this))[key]
-            };
-        });
+        let newKeyValue = _keyValue.get(this);
+        
+        newKeyValue[_selectedField.get(this)] = value;
 
         _keyValue.set(this, newKeyValue);
     }
@@ -112,22 +103,17 @@ export class Model extends Query {
                 .andWhereNull('deleted_at')
                 .get();
 
-            // TODO
-            // Refactor Later...
             if (
                 Array.isArray(queryRes.data)
                 && queryRes.data.length > 0
             ) {
-                let newKeyValue = {};
+                let newKeyValue = _keyValue.get(this);
 
                 // Map retrieved data
                 Object.keys(queryRes.data[0]).forEach(key => {
                     // Set key-value (Model)
-                    newKeyValue = {
-                        ...newKeyValue,
-                        [key]: queryRes.data[0][key]
-                    };
-
+                    newKeyValue[key] = queryRes.data[0][key];
+    
                     // Set key-value (Parent, Query)
                     this.setKeyValue(key, queryRes.data[0][key]);
 
@@ -163,16 +149,13 @@ export class Model extends Query {
                 Array.isArray(queryRes.data)
                 && queryRes.data.length > 0
             ) {
-                let newKeyValue = {};
+                let newKeyValue = _keyValue.get(this);
 
                 // Map retrieved data
                 Object.keys(queryRes.data[0]).forEach(key => {
                     // Set key-value (Model)
-                    newKeyValue = {
-                        ...newKeyValue,
-                        [key]: queryRes.data[0][key]
-                    };
-
+                    newKeyValue[key] = queryRes.data[0][key];
+    
                     // Set key-value (Parent, Query)
                     this.setKeyValue(key, queryRes.data[0][key]);
 
