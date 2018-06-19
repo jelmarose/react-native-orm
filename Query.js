@@ -116,7 +116,13 @@ export class Query {
      */
     where(column, operator, value) {
         _whereClause.set(this, `WHERE ${ column } ${ operator } ?`);
-        _whereClauseValues.set(this, (_whereClauseValues.get(this)).push(value));
+        _whereClauseValues.set(
+            this,
+            [
+                ...(_whereClauseValues.get(this)),
+                value
+            ]
+        )
 
         return this;
     }
@@ -130,7 +136,13 @@ export class Query {
      */
     andWhere(column, operator, value) {
         _whereClause.set(this, `${ _whereClause.get(this) } AND ${ column } ${ operator } ?`);
-        _whereClauseValues.set(this, (_whereClauseValues.get(this)).push(value));
+        _whereClauseValues.set(
+            this,
+            [
+                ...(_whereClauseValues.get(this)),
+                value
+            ]
+        );
 
         return this;
     }
@@ -144,7 +156,13 @@ export class Query {
      */
     orWhere(column, operator, value) {
         _whereClause.set(this, `${ _whereClause.get(this) } OR ${ column } ${ operator } ?`);
-        _whereClauseValues.set(this, (_whereClauseValues.get(this)).push(value));
+        _whereClauseValues.set(
+            this,
+            [
+                ...(_whereClauseValues.get(this)),
+                value
+            ]
+        );
 
         return this;
     }

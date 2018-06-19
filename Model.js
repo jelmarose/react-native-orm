@@ -40,7 +40,13 @@ export class Model extends Query {
      * @param {Array} fields
      */
     setAssignableFields(fields) {
-        _assignableFields.set(this, (_assignableFields.get(this)).push(...fields));
+        _assignableFields.set(
+            this,
+            [
+                ...(_assignableFields.get(this)),
+                ...fields
+            ]
+        );
     }
 
     /**
