@@ -193,7 +193,7 @@ export class Model extends Query {
                 !isEdit
                     ? (
                         await this.insert([
-                            _keyValue.get(this)
+                            (serialize([ _keyValue.get(this) ]))[0]
                         ])
                     ) : (
                         await this.update(serialize([ _keyValue.get(this) ])[0])
