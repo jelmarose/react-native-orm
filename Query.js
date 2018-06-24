@@ -409,4 +409,30 @@ export class Query {
             }
         });
     }
+    
+    /**
+     * Counts number of records in a table
+     * 
+     */
+    count() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const selectCountQuery = `SELECT COUNT(*) AS count FROM ${ _tableName.get(this) }`;
+                const queryResult = await (_databaseInstance.get(this)).executeSql(selectCountQuery);
+                
+                return resolve({
+                    statusCode: 200,
+                    message: 'Query executed successfully.',
+                    data: queryResult[0].rows.item(0)
+                });
+            } catch (err) {
+                console.log('Query.count() error:', err);
+
+                return reject({
+                    statusCode: 500,
+                    message: 'An error occurred.'
+                });
+            }
+        });
+    }
 }
