@@ -2,6 +2,7 @@ import SQLite from 'react-native-sqlite-storage';
 
 import { unserialize } from './utils/serializer';
 import { formatTimestamp } from './utils/timestamp';
+import { Subquery } from './Subquery';
 
 let _tableName          = new WeakMap();
 let _tableFields        = new WeakMap();
@@ -10,6 +11,7 @@ let _whereClauseValues  = new WeakMap();
 let _limitNum           = new WeakMap();
 let _keyValue           = new WeakMap();
 let _databaseInstance   = new WeakMap();
+let _subqueryInstance   = new WeakMap();
 
 export class Query {
     constructor(props = {}) {
@@ -24,6 +26,7 @@ export class Query {
         _limitNum.set(this, 0);
         _keyValue.set(this, {});
         _databaseInstance.set(this, props.dbInstance);
+        _subqueryInstance.set(this, new Subquery());
 
         this.setDatabaseInstance = this.setDatabaseInstance.bind(this);
         this.setKeyValue = this.setKeyValue.bind(this);
@@ -101,11 +104,27 @@ export class Query {
     /**
      * Where clause
      * 
-     * @param {string} column
+     * @param {string|Function} column
      * @param {string} operator
      * @param {*} value
      */
     where(column, operator, value) {
+        if (column instanceof Function) {
+            const subquery = column(_subqueryInstance.get(this));
+
+            _whereClause.set(this, `${ _whereClause.get(this) } ${ subquery.getWhereClause() }`);
+
+            _whereClauseValues.set(
+                this,
+                [
+                    ...(_whereClauseValues.get(this)),
+                    ...(subquery.getWhereClauseValues())
+                ]
+            );
+
+            return this;
+        }
+
         if (_whereClause.get(this)) {
             _whereClause.set(this, `${ _whereClause.get(this) } AND ${ column } ${ operator } ?`);
         } else {
@@ -118,7 +137,7 @@ export class Query {
                 ...(_whereClauseValues.get(this)),
                 value
             ]
-        )
+        );
 
         return this;
     }
@@ -146,11 +165,27 @@ export class Query {
     /**
      * Where clause (OR)
      * 
-     * @param {string} column
+     * @param {string|Function} column
      * @param {string} operator
      * @param {*} value
      */
     orWhere(column, operator, value) {
+        if (column instanceof Function) {
+            const subquery = column(_subqueryInstance.get(this));
+
+            _whereClause.set(this, `${ _whereClause.get(this) } ${ subquery.getWhereClause('OR') }`);
+
+            _whereClauseValues.set(
+                this,
+                [
+                    ...(_whereClauseValues.get(this)),
+                    ...(subquery.getWhereClauseValues())
+                ]
+            );
+
+            return this;
+        }
+
         _whereClause.set(this, `${ _whereClause.get(this) } OR ${ column } ${ operator } ?`);
         _whereClauseValues.set(
             this,
