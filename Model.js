@@ -136,6 +136,51 @@ export class Model extends Query {
     }
 
     /**
+     * Finds specific model details by id
+     * Same as Query.get() but with
+     * Query.where() clause
+     * and trashed records are included
+     * 
+     * @param {*} value
+     * @param {string} column
+     */
+    findWithTrashed(value, column = 'uuid') {
+        return new Promise(async (resolve, reject) => {
+            const queryRes = await this.where(column, '=', value)
+                .get();
+
+            if (
+                Array.isArray(queryRes.data)
+                && queryRes.data.length > 0
+            ) {
+                let newKeyValue = _keyValue.get(this);
+
+                // Map retrieved data
+                Object.keys(queryRes.data[0]).forEach(key => {
+                    // Set key-value (Model)
+                    newKeyValue[key] = queryRes.data[0][key];
+    
+                    // Set key-value (Parent, Query)
+                    this.setKeyValue(key, queryRes.data[0][key]);
+
+                    _isEdit.set(this, true);
+                });
+
+                _keyValue.set(this, newKeyValue);
+
+                // Reset value
+                newKeyValue = {};
+            }
+
+            return resolve({
+                statusCode: queryRes.statusCode,
+                message: queryRes.message,
+                data: queryRes.data[0] || {}
+            });
+        });
+    }
+
+    /**
      * Retrieves first query result
      * Same as Query.get() but with
      * Query.limit() clause
