@@ -106,7 +106,12 @@ export class Query {
      * @param {*} value
      */
     where(column, operator, value) {
-        _whereClause.set(this, `WHERE ${ column } ${ operator } ?`);
+        if (_whereClause.get(this)) {
+            _whereClause.set(this, `${ _whereClause.get(this) } AND ${ column } ${ operator } ?`);
+        } else {
+            _whereClause.set(this, `WHERE ${ column } ${ operator } ?`);
+        }
+
         _whereClauseValues.set(
             this,
             [
