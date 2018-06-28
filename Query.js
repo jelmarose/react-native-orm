@@ -324,12 +324,15 @@ export class Query {
         return new Promise(async (resolve, reject) => {
             try {
                 await (_databaseInstance.get(this)).transaction(async (tx) => {
-                    for (let value of data) {
+                    let length = data.length;
+                    let value = {};
+
+                    while (length--) {
                         // Create/update default timestamps (created_at and updated_at only)
                         const timestamp = new Date();
 
                         value = {
-                            ...value,
+                            ...(data[length]),
                             created_at: formatTimestamp(timestamp),
                             updated_at: formatTimestamp(timestamp)
                         };
@@ -346,14 +349,7 @@ export class Query {
                             + '(' + (Array(values.length).fill('?')).join(', ') + ')';
 
                         try {
-                            // Create table
-                            const result = await tx.executeSql(insertQueryFormat, values);
-
-                            return resolve({
-                                statusCode: 200,
-                                message: 'Data successfully inserted.',
-                                data: {}
-                            });
+                            tx.executeSql(insertQueryFormat, values);
                         } catch (err) {
                             console.log('Data insertion error:', err);
     
@@ -363,6 +359,12 @@ export class Query {
                             });
                         }
                     }
+
+                    return resolve({
+                        statusCode: 200,
+                        message: 'Data successfully inserted.',
+                        data: {}
+                    });
                 });
             } catch (err) {
                 console.log('Query.insert() error:', err);
