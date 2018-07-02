@@ -41,6 +41,7 @@ export class Query {
         this.insert = this.insert.bind(this);
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
+        this.count = this.count.bind(this);
     }
 
     /**
