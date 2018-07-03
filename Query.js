@@ -13,6 +13,7 @@ let _keyValue           = new WeakMap();
 let _databaseInstance   = new WeakMap();
 let _subqueryInstance   = new WeakMap();
 let _orderByClause      = new WeakMap();
+let _distinctClause     = new WeakMap();
 
 export class Query {
     constructor(props = {}) {
@@ -29,6 +30,7 @@ export class Query {
         _databaseInstance.set(this, props.dbInstance);
         _subqueryInstance.set(this, new Subquery());
         _orderByClause.set(this, '');
+        _distinctClause.set(this, '');
 
         this.setDatabaseInstance = this.setDatabaseInstance.bind(this);
         this.setKeyValue = this.setKeyValue.bind(this);
@@ -44,6 +46,7 @@ export class Query {
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
         this.count = this.count.bind(this);
+        this.distinct = this.distinct.bind(this);
     }
 
     /**
@@ -290,7 +293,8 @@ export class Query {
                 : '';
 
             const sqlQuery = await (_databaseInstance.get(this)).executeSql('SELECT '
-                + fields + ' FROM ' 
+                + (_distinctClause.get(this) ? `${ _distinctClause.get(this) } ` : '')
+                + (_distinctClause.get(this) ? 'FROM ' : fields + ' FROM ') 
                 + _tableName.get(this) + ' '
                 + _whereClause.get(this) + ' '
                 + (_orderByClause.get(this) ? `${ _orderByClause.get(this) } ` : '')
@@ -490,6 +494,17 @@ export class Query {
      */
     orderBy(column, sort = 'asc') {
         _orderByClause.set(this, `ORDER BY ${ column } ${ sort.toUpperCase() }`);
+
+        return this;
+    }
+
+    /**
+     * Removes duplicate rows in a record
+     * 
+     * @param {String|Array} column 
+     */
+    distinct(column = []) {
+        _distinctClause.set(this, `DISTINCT ${ Array.isArray(column) ? column.join(', ') : column }`);
 
         return this;
     }
