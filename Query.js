@@ -12,6 +12,7 @@ let _limitNum           = new WeakMap();
 let _keyValue           = new WeakMap();
 let _databaseInstance   = new WeakMap();
 let _subqueryInstance   = new WeakMap();
+let _orderByClause      = new WeakMap();
 
 export class Query {
     constructor(props = {}) {
@@ -27,6 +28,7 @@ export class Query {
         _keyValue.set(this, {});
         _databaseInstance.set(this, props.dbInstance);
         _subqueryInstance.set(this, new Subquery());
+        _orderByClause.set(this, '');
 
         this.setDatabaseInstance = this.setDatabaseInstance.bind(this);
         this.setKeyValue = this.setKeyValue.bind(this);
@@ -291,6 +293,7 @@ export class Query {
                 + fields + ' FROM ' 
                 + _tableName.get(this) + ' '
                 + _whereClause.get(this) + ' '
+                + (_orderByClause.get(this) ? `${ _orderByClause.get(this) } ` : '')
                 + limitQueryFormat + ';', _whereClauseValues.get(this));
 
             // Reset values
@@ -477,5 +480,17 @@ export class Query {
                 });
             }
         });
+    }
+
+    /**
+     * Sorts query result by a given column.
+     * 
+     * @param {String} column 
+     * @param {String} sort 
+     */
+    orderBy(column, sort = 'asc') {
+        _orderByClause.set(this, `ORDER BY ${ column } ${ sort.toUpperCase() }`);
+
+        return this;
     }
 }
