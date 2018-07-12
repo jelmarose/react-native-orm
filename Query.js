@@ -4,30 +4,30 @@ import { unserialize } from './utils/serializer';
 import { formatTimestamp } from './utils/timestamp';
 import { Subquery } from './Subquery';
 
+// SQLite configuration
+SQLite.DEBUG(false);
+SQLite.enablePromise(true);
+
+let _databaseInstance   = null;
+
 let _tableName          = new WeakMap();
 let _tableFields        = new WeakMap();
 let _whereClause        = new WeakMap();
 let _whereClauseValues  = new WeakMap();    
 let _limitNum           = new WeakMap();
 let _keyValue           = new WeakMap();
-let _databaseInstance   = new WeakMap();
 let _subqueryInstance   = new WeakMap();
 let _orderByClause      = new WeakMap();
 let _distinctClause     = new WeakMap();
 
 export class Query {
     constructor(props = {}) {
-        // SQLite configuration
-        SQLite.DEBUG(props.debug || false);
-        SQLite.enablePromise(true);
-
         _tableName.set(this, '');
         _tableFields.set(this, {});
         _whereClause.set(this, '');
         _whereClauseValues.set(this, []);    
         _limitNum.set(this, 0);
         _keyValue.set(this, {});
-        _databaseInstance.set(this, props.dbInstance);
         _subqueryInstance.set(this, new Subquery());
         _orderByClause.set(this, '');
         _distinctClause.set(this, '');
@@ -55,7 +55,9 @@ export class Query {
      * @param {Object} dbInstance
      */
     setDatabaseInstance(dbInstance) {
-        _databaseInstance.set(this, dbInstance);
+        if (!_databaseInstance) {
+            _databaseInstance = dbInstance;
+        }
     }
 
     /**
@@ -292,7 +294,7 @@ export class Query {
                 ? `LIMIT ${ _limitNum.get(this) }`
                 : '';
 
-            const sqlQuery = await (_databaseInstance.get(this)).executeSql('SELECT '
+            const sqlQuery = await _databaseInstance.executeSql('SELECT '
                 + (_distinctClause.get(this) ? `${ _distinctClause.get(this) } ` : '')
                 + (_distinctClause.get(this) ? 'FROM ' : fields + ' FROM ') 
                 + _tableName.get(this) + ' '
@@ -331,7 +333,7 @@ export class Query {
     insert(data = []) {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
+                await _databaseInstance.transaction(async (tx) => {
                     let length = data.length;
                     let value = {};
 
@@ -393,7 +395,7 @@ export class Query {
     update(value) {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
+                await _databaseInstance.transaction(async (tx) => {
                     let tableFieldUpdates = [];
                     let dataValues = [];
 
@@ -437,7 +439,7 @@ export class Query {
     delete() {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
+                await _databaseInstance.transaction(async (tx) => {
                     const deleteQueryFormat = 'DELETE FROM ' + _tableName.get(this)
                         + ' WHERE uuid = ?';
 
@@ -468,7 +470,7 @@ export class Query {
         return new Promise(async (resolve, reject) => {
             try {
                 const selectCountQuery = `SELECT COUNT(*) AS count FROM ${ _tableName.get(this) }`;
-                const queryResult = await (_databaseInstance.get(this)).executeSql(selectCountQuery);
+                const queryResult = await _databaseInstance.executeSql(selectCountQuery);
                 
                 return resolve({
                     statusCode: 200,
