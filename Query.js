@@ -4,29 +4,33 @@ import { unserialize } from './utils/serializer';
 import { formatTimestamp } from './utils/timestamp';
 import { Subquery } from './Subquery';
 
+// SQLite configuration
+SQLite.DEBUG(false);
+SQLite.enablePromise(true);
+
+let _databaseInstance   = null;
+
 let _tableName          = new WeakMap();
 let _tableFields        = new WeakMap();
 let _whereClause        = new WeakMap();
 let _whereClauseValues  = new WeakMap();    
 let _limitNum           = new WeakMap();
 let _keyValue           = new WeakMap();
-let _databaseInstance   = new WeakMap();
 let _subqueryInstance   = new WeakMap();
+let _orderByClause      = new WeakMap();
+let _distinctClause     = new WeakMap();
 
 export class Query {
     constructor(props = {}) {
-        // SQLite configuration
-        SQLite.DEBUG(props.debug || false);
-        SQLite.enablePromise(true);
-
         _tableName.set(this, '');
         _tableFields.set(this, {});
         _whereClause.set(this, '');
         _whereClauseValues.set(this, []);    
         _limitNum.set(this, 0);
         _keyValue.set(this, {});
-        _databaseInstance.set(this, props.dbInstance);
         _subqueryInstance.set(this, new Subquery());
+        _orderByClause.set(this, '');
+        _distinctClause.set(this, '');
 
         this.setDatabaseInstance = this.setDatabaseInstance.bind(this);
         this.setKeyValue = this.setKeyValue.bind(this);
@@ -41,6 +45,8 @@ export class Query {
         this.insert = this.insert.bind(this);
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
+        this.count = this.count.bind(this);
+        this.distinct = this.distinct.bind(this);
     }
 
     /**
@@ -49,7 +55,9 @@ export class Query {
      * @param {Object} dbInstance
      */
     setDatabaseInstance(dbInstance) {
-        _databaseInstance.set(this, dbInstance);
+        if (!_databaseInstance) {
+            _databaseInstance = dbInstance;
+        }
     }
 
     /**
@@ -286,10 +294,12 @@ export class Query {
                 ? `LIMIT ${ _limitNum.get(this) }`
                 : '';
 
-            const sqlQuery = await (_databaseInstance.get(this)).executeSql('SELECT '
-                + fields + ' FROM ' 
+            const sqlQuery = await _databaseInstance.executeSql('SELECT '
+                + (_distinctClause.get(this) ? `${ _distinctClause.get(this) } ` : '')
+                + (_distinctClause.get(this) ? 'FROM ' : fields + ' FROM ') 
                 + _tableName.get(this) + ' '
                 + _whereClause.get(this) + ' '
+                + (_orderByClause.get(this) ? `${ _orderByClause.get(this) } ` : '')
                 + limitQueryFormat + ';', _whereClauseValues.get(this));
 
             // Reset values
@@ -323,13 +333,16 @@ export class Query {
     insert(data = []) {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
-                    for (let value of data) {
+                await _databaseInstance.transaction(async (tx) => {
+                    let length = data.length;
+                    let value = {};
+
+                    while (length--) {
                         // Create/update default timestamps (created_at and updated_at only)
                         const timestamp = new Date();
 
                         value = {
-                            ...value,
+                            ...(data[length]),
                             created_at: formatTimestamp(timestamp),
                             updated_at: formatTimestamp(timestamp)
                         };
@@ -346,14 +359,7 @@ export class Query {
                             + '(' + (Array(values.length).fill('?')).join(', ') + ')';
 
                         try {
-                            // Create table
-                            const result = await tx.executeSql(insertQueryFormat, values);
-
-                            return resolve({
-                                statusCode: 200,
-                                message: 'Data successfully inserted.',
-                                data: {}
-                            });
+                            tx.executeSql(insertQueryFormat, values);
                         } catch (err) {
                             console.log('Data insertion error:', err);
     
@@ -363,6 +369,12 @@ export class Query {
                             });
                         }
                     }
+
+                    return resolve({
+                        statusCode: 200,
+                        message: 'Data successfully inserted.',
+                        data: {}
+                    });
                 });
             } catch (err) {
                 console.log('Query.insert() error:', err);
@@ -383,7 +395,7 @@ export class Query {
     update(value) {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
+                await _databaseInstance.transaction(async (tx) => {
                     let tableFieldUpdates = [];
                     let dataValues = [];
 
@@ -427,7 +439,7 @@ export class Query {
     delete() {
         return new Promise(async (resolve, reject) => {
             try {
-                await (_databaseInstance.get(this)).transaction(async (tx) => {
+                await _databaseInstance.transaction(async (tx) => {
                     const deleteQueryFormat = 'DELETE FROM ' + _tableName.get(this)
                         + ' WHERE uuid = ?';
 
@@ -458,7 +470,7 @@ export class Query {
         return new Promise(async (resolve, reject) => {
             try {
                 const selectCountQuery = `SELECT COUNT(*) AS count FROM ${ _tableName.get(this) }`;
-                const queryResult = await (_databaseInstance.get(this)).executeSql(selectCountQuery);
+                const queryResult = await _databaseInstance.executeSql(selectCountQuery);
                 
                 return resolve({
                     statusCode: 200,
@@ -474,5 +486,28 @@ export class Query {
                 });
             }
         });
+    }
+
+    /**
+     * Sorts query result by a given column.
+     * 
+     * @param {String} column 
+     * @param {String} sort 
+     */
+    orderBy(column, sort = 'asc') {
+        _orderByClause.set(this, `ORDER BY ${ column } ${ sort.toUpperCase() }`);
+
+        return this;
+    }
+
+    /**
+     * Removes duplicate rows in a record
+     * 
+     * @param {String|Array} column 
+     */
+    distinct(column = []) {
+        _distinctClause.set(this, `DISTINCT ${ Array.isArray(column) ? column.join(', ') : column }`);
+
+        return this;
     }
 }
