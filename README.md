@@ -16,8 +16,11 @@ NPM:
 npm install --save git+https://github.com/whizdummy/react-native-orm#master
 ```
 
+### Example:
+https://github.com/whizdummy/react-native-orm-sample
+
 **TODO:**
-* [ ] Example
+* [x] Example
 * [ ] API Documentation
 * [ ] Publish to npm
 * [ ] Changelog
