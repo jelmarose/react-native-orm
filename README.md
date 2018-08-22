@@ -58,32 +58,24 @@ import { Model } from "react-native-orm";
 
 export class User extends Model {
     constructor(props = {}) {
-        super();
-
-        this.modelName = 'User';
+        super({
+            dbInstance: props.dbInstance || null,
+            tableName: 'User',
+            tableFields: {
+                uuid:       'string|primary',
+                first_name: 'string',
+                last_name:  'string',
+                occupation:   'string'
+            },
+            assignableFields: [
+                'uuid',
+                'first_name',
+                'last_name',
+                'occupation'
+            ]
+        });
         
-        this.fields = {
-            uuid:       'string|primary',
-            first_name: 'string',
-            last_name:  'string',
-            occupation:   'string'
-        };
-
-        this.tableName(this.modelName)
-            .tableFields(this.fields);
-            
-        this.setDatabaseInstance(props.dbInstance || null);
         
-        this.setAssignableFields(Object.keys(this.fields));
-    }
-
-    getModelName = () => {
-        return this.modelName;
-    }
-
-    getModelFields = () => {
-        return this.fields;
-    }
 }
 ```
 
@@ -112,7 +104,8 @@ function createUser(user){
             userModel.getField('last_name').setField(user.lastName);
             userModel.getField('occupation').setField(user.occupation);
             
-            // See https://github.com/whizdummy/react-native-orm-sample for using a for-loop to fill in the fields
+            // See https://github.com/whizdummy/react-native-orm-sample/tree/develop 
+            // for using a for-loop to fill in the fields
 
             await userModel.save();
 
