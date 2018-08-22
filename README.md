@@ -141,6 +141,19 @@ export default createUser;
         or
       * ``userModel.where('first_name', '=', 'John').get().then(...).catch(...);``
  
+5. Delete records 
+    * Soft delete
+        ```javascript
+         await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
+         await userModel.remove(true);
+        ```
+    * Hard delete
+        ```javascript
+         await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
+         await userModel.remove();
+        ```
+
+
 **TODO:**
 * [x] Example
 * [ ] API Documentation
