@@ -96,13 +96,13 @@ function createUser(user){
             const userModel = new User({ dbInstance: global.dbInstance });
             
             // Create record
-            // To update an existing record, use the find function to filter out records
-            // Example: await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
+            // .find() is required to check if there are existing records of the same primary key
+            await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
             
-            userModel.getField('uuid').setField(user.uuid);
-            userModel.getField('first_name').setField(user.firstName);
-            userModel.getField('last_name').setField(user.lastName);
-            userModel.getField('occupation').setField(user.occupation);
+            userModel.getField('uuid').setFieldValue(user.uuid);
+            userModel.getField('first_name').setFieldValue(user.firstName);
+            userModel.getField('last_name').setFieldValue(user.lastName);
+            userModel.getField('occupation').setFieldValue(user.occupation);
             
             // See https://github.com/whizdummy/react-native-orm-sample/tree/develop 
             // for using a for-loop to fill in the fields
