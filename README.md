@@ -24,6 +24,7 @@ https://github.com/whizdummy/react-native-orm-sample
 1. Open and initialize and instance of the database.
 ```javascript
 import {Schema} from 'react-native-orm';
+import {User} from '../model/User';
 
 function openDatabase(){
     return new Promise(async (resolve, reject) => {
@@ -39,6 +40,11 @@ function openDatabase(){
             if (schemaRes.statusCode === 200) {
                 // If successful, set the database instance to global for easy referencing 
                 global.dbInstance = schemaRes.data;
+                // Initialize/create tables
+                await Promise.all([
+                    // Just insert new models here...
+                    await schema.createTable(new User()),
+                ]);
                 return resolve(schemaRes.message);
             }
         } catch (err) {
