@@ -103,7 +103,7 @@ function createUser(user){
             
             // Create record
             // .find() is required to check if there are existing records of the same primary key
-            await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
+            await userModel.find(user.uuid);
             
             userModel.getField('uuid').setFieldValue(user.uuid);
             userModel.getField('first_name').setFieldValue(user.firstName);
