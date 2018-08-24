@@ -127,6 +127,15 @@ export default createUser;
 
 4. Read records of the table
   * Get all records: `` userModel.all()``
+        ```javascript
+            userModel.all()
+                .then(function(results){
+                    console.log(results.status) //returns 200 if successful
+                    console.log(results.message) // returns status message 
+                    console.log(results.data) // array of results, this are the entries from the database
+                })
+                .catch((err) => console.log(err))
+        ```
   * Get first record: `` userModel.first()``
   * Get a specific record (Use this for searching an entry by its primary key, otherwise it would only return the first entry)
       * Not including deleted  
