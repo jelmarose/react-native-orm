@@ -126,7 +126,7 @@ export default createUser;
 ```
 
 4. Read records of the table
-  * Get all records: `` userModel.all()``
+  * Get all records:
         ```javascript
             userModel.all()
                 .then(function(results){
