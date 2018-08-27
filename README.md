@@ -171,8 +171,8 @@ export default createUser;
 ```javascript
 export default function deleteDB(){
     var SQLite = require('react-native-sqlite-storage')
-    var db = SQLite.deleteDatabase({name : 'patientapp.db', location : 'default'})
-    console.log(db)
+    var db = SQLite.deleteDatabase({name : 'yourDatabase.db', location : 'default'})
+    //console.log(db)
 }
 ```
 2. Run on startup. If the problem is solved, comment the function to avoid deletion of the current database.
