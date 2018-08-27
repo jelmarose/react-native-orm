@@ -212,7 +212,9 @@ function checkExistingMainUser(){
                 console.log("Checking for existing Main User..")
                 userModel.find('main', 'type')
                     .then(function(result){
+                        // Do something if successful
                         console.log(result)
+                        return resolve(result)
                     })
                     .catch((err) => console.log(err))
 
