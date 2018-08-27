@@ -160,7 +160,20 @@ export default createUser;
          await userModel.find('7a39da50-2b66-47be-8d99-3f074c525b70');
          await userModel.remove();
         ```
-
+        
+### Troubleshooting
+**Error:** Table column does not exist
+**Possible Causes:** You modified the structure of the model by renaming columns or adding new ones. This happens because SQLite storage creates an internal copy of the database, which does not change even if you delete the existing database on `android/app/src/main/assets/www`
+**Solution:** 
+1. Create a function that will delete the database
+```javascript
+export default function deleteDB(){
+    var SQLite = require('react-native-sqlite-storage')
+    var db = SQLite.deleteDatabase({name : 'patientapp.db', location : 'default'})
+    console.log(db)
+}
+```
+2. Run on startup. If the problem is solved, comment the function to avoid deletion of the current database.
 
 **TODO:**
 * [x] Example
