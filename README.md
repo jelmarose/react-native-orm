@@ -172,7 +172,7 @@ export default createUser;
 export default function deleteDB(){
     var SQLite = require('react-native-sqlite-storage')
     var db = SQLite.deleteDatabase({name : 'yourDatabase.db', location : 'default'})
-    //console.log(db)
+    console.log(db)
 }
 ```
 2. Run on startup. If the problem is solved, comment the function to avoid deletion of the current database.
