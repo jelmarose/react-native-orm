@@ -164,6 +164,8 @@ export default createUser;
 ### Troubleshooting
 **Error:** Table column does not exist
 
+**Occurrence:** Creating/Inserting new records on the database
+
 **Possible Causes:** You modified the structure of the model by renaming columns or adding new ones. This happens because SQLite storage creates an internal copy of the database, which does not change even if you delete the existing database on `android/app/src/main/assets/www`
 
 **Solution:** 
@@ -177,8 +179,52 @@ export default function deleteDB(){
 ```
 2. Run on startup. If the problem is solved, comment the function to avoid deletion of the current database.
 
-**TODO:**
-* [x] Example
-* [ ] API Documentation
-* [ ] Publish to npm
-* [ ] Changelog
+---------------------------------------------------------------
+
+**Error:** TypeError: Cannot read property 'transaction' of null
+
+**Occurrence:** Reading records from the database (either using .find() or .where())
+
+**Possible Causes:** The instance of the database either expired/timeout or the database wasn't initialize at the time of retrieving records. This is most likely due to the async property of the functions, so the connection isn't guaranteed to be open immediately.
+
+**Solution:** 
+Initialize an instance of the database on the same function calling .find() or .where()
+```javascript
+import {Schema} from 'react-native-orm';
+import {User} from '../model/User';
+
+function checkExistingMainUser(){
+    return new Promise(async (resolve, reject) => {
+        const schema = new Schema({
+            databaseName: 'yourDatabase.db'
+        });
+        try {
+            //Open database
+            const schemaRes = await schema.open();
+
+            if (schemaRes.statusCode === 200) {
+                global.dbInstance = schemaRes.data;
+                await Promise.all([
+                    await schema.createTable(new User()),
+                ]);
+
+                const userModel = new User({ dbInstance: global.dbInstance });
+                console.log("Checking for existing Main User..")
+                userModel.find('main', 'type')
+                    .then(function(result){
+                        console.log(result)
+                    })
+                    .catch((err) => console.log(err))
+
+                return resolve('Main User found');
+            }
+          } 
+        catch (err) {
+              return reject(err.message);
+          }
+      });
+}
+
+export default checkExistingMainUser;
+```
+
