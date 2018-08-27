@@ -163,7 +163,9 @@ export default createUser;
         
 ### Troubleshooting
 **Error:** Table column does not exist
+
 **Possible Causes:** You modified the structure of the model by renaming columns or adding new ones. This happens because SQLite storage creates an internal copy of the database, which does not change even if you delete the existing database on `android/app/src/main/assets/www`
+
 **Solution:** 
 1. Create a function that will delete the database
 ```javascript
